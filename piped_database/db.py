@@ -163,8 +163,7 @@ class EngineManager(piped_service.PipedService):
         if not self.engine_configuration.get('url'):
             raise exceptions.ConfigurationError('missing database-URL')
         if not self.ping_interval:
-            detail = 'currently set to [{0!r}]'.format(configuration['ping_interval'])
-            raise exceptions.ConfigurationError('Please specify a non-zero ping-interval', detail)
+            raise exceptions.ConfigurationError('Please specify a non-zero ping-interval')
 
     @defer.inlineCallbacks
     def run(self):
@@ -398,8 +397,12 @@ class PostgresListener(piped_service.PipedService):
             if queue in queues:
                 queues.discard(queue)
                 if not queues:
-                    yield self._run_exclusively(self._connection.runOperation, 'UNLISTEN "%s"' % listener_name)
-                    logger.info('"%s"-listener is now NOT listening to "%s"' % (self.profile_name, listener_name))
+                    try:
+                        yield self._run_exclusively(self._connection.runOperation, 'UNLISTEN "%s"' % listener_name)
+                        logger.info('"%s"-listener is now NOT listening to "%s"' % (self.profile_name, listener_name))
+                    except Exception as e:
+                        # This happens when a connection drops, in which case we're re-establishing it.
+                        pass
 
     def wait_for_txid_min(self, txid):
         """ Returns a Deferred that is callbacked with the current

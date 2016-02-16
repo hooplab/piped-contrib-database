@@ -277,7 +277,7 @@ class PostgresListener(piped_service.PipedService):
         self._deferreds_for_advisory_lock = collections.defaultdict(list)
 
     def _maybe_disconnect(self):
-        if self._connection:
+        if self._connection and self._connection.pollable():
             d = self._connection.close()
             if d:
                 d.addErrback(lambda failure: None)

@@ -425,7 +425,7 @@ class PostgresListener(piped_service.PipedService):
 
     @defer.inlineCallbacks
     def _get_current_txid_min(self):
-        rs = yield self._run_exclusively(self._connection.runQuery, 'SELECT txid_snapshot_xmin(txid_current_snapshot())')
+        rs = yield self._run_exclusively(self._connection.runQuery, 'SELECT txid_snapshot_xmin_f(txid_current_snapshot())')
         defer.returnValue(rs[0][0])
 
     @defer.inlineCallbacks
